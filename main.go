@@ -1,9 +1,11 @@
 package main
 
 import (
-	"io/ioutil"
 	"fmt"
+	"time"
 	"os"
+	"os/exec"
+	"io/ioutil"
 	"encoding/json"
 )
 
@@ -45,20 +47,31 @@ func main() {
 	if prog.Active {
 		for _, item := range prog.Scope {
 			if item.Type == "url" && !item.Wildcard {
-				fmt.Printf("osmedeus -f recon -t %s -p'program=%s' -p'wildcard=false' \n", item.Asset, prog.Name)
+				cmd := fmt.Sprintf("osmedeus scan -f recon -t %s -p'program=%s,wildcard=false' \n", item.Asset, prog.Name)
+				fmt.Printf(cmd)
+				
+				exec.Command("bash", "-c", cmd).Output()
 			}
 		}
 
 		for _, item := range prog.Scope {
 			if item.Type == "url" && item.Wildcard {
 				if len(item.Exclude) == 0 {
-					fmt.Printf("osmedeus -f recon -t %s -p'program=%s' \n", item.Asset, prog.Name)
+					cmd := fmt.Sprintf("osmedeus scan -f recon -t %s -p'program=%s' \n", item.Asset, prog.Name)
+					fmt.Printf(cmd)
+
+					exec.Command("bash", "-c", cmd).Output()
 				} else {
-					excludeObj, _ := json.Marshal(item.Exclude)
-					fmt.Printf("osmedeus -f recon -t %s -p'program=%s' -p'exclude=%s' \n", item.Asset, prog.Name, string(excludeObj))
+					excludeJson, _ := json.Marshal(item.Exclude)
+					exFileName := fmt.Sprintf("EXFILE-%s-%s-%d.json",prog.Name, item.Asset, time.Now().Unix())
+					err = ioutil.WriteFile("/tmp/" + exFileName, excludeJson, 0777)
+					if err != nil { fmt.Println("Error writing exclude file: ", err) }
+					cmd := fmt.Sprintf("osmedeus scan -f recon -t %s -p'program=%s,excludeFile=%s' \n", item.Asset, prog.Name, "/tmp/"+exFileName)
+					fmt.Printf(cmd)
+
+					exec.Command("bash", "-c", cmd).Output()
 				}
 			}
 		}
 	}
-
 }
