@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 	"os"
-	"os/exec"
+	//"os/exec"
 	"io/ioutil"
 	"encoding/json"
 )
@@ -50,7 +50,7 @@ func main() {
 				cmd := fmt.Sprintf("osmedeus scan -f recon -t %s -p'program=%s,wildcard=false' \n", item.Asset, prog.Name)
 				fmt.Printf(cmd)
 				
-				exec.Command("bash", "-c", cmd).Output()
+				//exec.Command("bash", "-c", cmd).Output()
 			}
 		}
 
@@ -60,16 +60,16 @@ func main() {
 					cmd := fmt.Sprintf("osmedeus scan -f recon -t %s -p'program=%s' \n", item.Asset, prog.Name)
 					fmt.Printf(cmd)
 
-					exec.Command("bash", "-c", cmd).Output()
+					//exec.Command("bash", "-c", cmd).Output()
 				} else {
 					excludeJson, _ := json.Marshal(item.Exclude)
 					exFileName := fmt.Sprintf("EXFILE-%s-%s-%d.json",prog.Name, item.Asset, time.Now().Unix())
 					err = ioutil.WriteFile("/tmp/" + exFileName, excludeJson, 0777)
 					if err != nil { fmt.Println("Error writing exclude file: ", err) }
-					cmd := fmt.Sprintf("osmedeus scan -f recon -t %s -p'program=%s,excludeFile=%s' \n", item.Asset, prog.Name, "/tmp/"+exFileName)
+					cmd := fmt.Sprintf("osmedeus scan -f recon -t %s -p'program=%s,excFile=%s' \n", item.Asset, prog.Name, "/tmp/"+exFileName)
 					fmt.Printf(cmd)
 
-					exec.Command("bash", "-c", cmd).Output()
+					//exec.Command("bash", "-c", cmd).Output()
 				}
 			}
 		}
